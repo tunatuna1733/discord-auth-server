@@ -2,6 +2,11 @@ import { Hono } from 'hono';
 
 const app = new Hono();
 
+// import { load } from 'https://deno.land/std@0.224.0/dotenv/mod.ts';
+// const env = await load();
+// const clientId = env['CLIENT_ID'];
+// const clientSecret = env['CLIENT_SECRET'];
+
 const clientId = Deno.env.get('CLIENT_ID');
 const clientSecret = Deno.env.get('CLIENT_SECRET');
 
@@ -37,17 +42,14 @@ app.get('/auth', async (c) => {
       500
     );
   }
+  const bodyText = `grant_type=authorization_code&code=${code}&redirect_uri=http://localhost`;
   const res = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
     },
-    body: JSON.stringify({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: 'http://localhost',
-    }),
+    body: bodyText,
   });
   try {
     const tokenInfo: DiscordTokenResponse = await res.json();
@@ -87,16 +89,14 @@ app.get('/refresh', async (c) => {
       500
     );
   }
+  const bodyText = `grant_type=refresh_token&refresh_token=${refreshToken}`;
   const res = await fetch('https://discord.com/api/oauth2/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
     },
-    body: JSON.stringify({
-      grant_type: 'refresh_tokne',
-      refresh_token: refreshToken,
-    }),
+    body: bodyText,
   });
   try {
     const tokenInfo: DiscordTokenResponse = await res.json();
